@@ -102,15 +102,17 @@ const ROWS = 7;
  * Renders a digit (0-9) as a dot matrix pattern
  * @param container - The container element to render the digit into
  * @param digit - The digit to render (0-9)
- * @returns The container element with the digit rendered
+ * @returns Object containing the container and array of active dot elements
  */
-export function renderDigitAsDots(container: HTMLElement, digit: number): HTMLElement {
+export function renderDigitAsDots(container: HTMLElement, digit: number): { container: HTMLElement; activeDots: HTMLElement[] } {
   // Clear existing content
   container.innerHTML = '';
   container.className = 'digit-matrix';
   
   // Get pattern for this digit
   const pattern = DIGIT_PATTERNS[digit] || DIGIT_PATTERNS[0];
+  
+  const activeDots: HTMLElement[] = [];
   
   // Create grid of dots
   for (let row = 0; row < ROWS; row++) {
@@ -122,11 +124,12 @@ export function renderDigitAsDots(container: HTMLElement, digit: number): HTMLEl
       dot.className = 'dot';
       if (isActive) {
         dot.classList.add('dot-active');
+        activeDots.push(dot);
       }
       container.appendChild(dot);
     }
   }
   
-  return container;
+  return { container, activeDots };
 }
 

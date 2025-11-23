@@ -42,20 +42,14 @@ function calculateTimeRemaining(): CountdownValues {
 }
 
 /**
- * Update a single digit and trigger bloom if it changed
+ * Update a single digit and return active dots
  */
 function updateDigit(
   container: HTMLElement,
-  digit: number,
-  previousDigit: number | null,
-  parentContainer: HTMLElement
-): void {
-  renderDigitAsDots(container, digit);
-  
-  // Trigger bloom effect if digit changed
-  if (previousDigit !== null && previousDigit !== digit) {
-    createBloomEffect(parentContainer);
-  }
+  digit: number
+): HTMLElement[] {
+  const result = renderDigitAsDots(container, digit);
+  return result.activeDots;
 }
 
 /**
@@ -85,47 +79,53 @@ function updateCountdown(): void {
   const isFirstUpdate = !previousValues.days;
   
   // Update days
-  if (daysContainer1 && daysContainer2 && daysGroup) {
+  if (daysContainer1 && daysContainer2) {
     const days1 = parseInt(values.days[0]);
     const days2 = parseInt(values.days[1]);
-    const prevDays1 = isFirstUpdate ? null : (previousValues.days ? parseInt(previousValues.days[0]) : null);
-    const prevDays2 = isFirstUpdate ? null : (previousValues.days ? parseInt(previousValues.days[1]) : null);
-    
-    updateDigit(daysContainer1, days1, prevDays1, daysGroup);
-    updateDigit(daysContainer2, days2, prevDays2, daysGroup);
+    updateDigit(daysContainer1, days1);
+    updateDigit(daysContainer2, days2);
   }
   
   // Update hours
-  if (hoursContainer1 && hoursContainer2 && hoursGroup) {
+  if (hoursContainer1 && hoursContainer2) {
     const hours1 = parseInt(values.hours[0]);
     const hours2 = parseInt(values.hours[1]);
-    const prevHours1 = isFirstUpdate ? null : (previousValues.hours ? parseInt(previousValues.hours[0]) : null);
-    const prevHours2 = isFirstUpdate ? null : (previousValues.hours ? parseInt(previousValues.hours[1]) : null);
-    
-    updateDigit(hoursContainer1, hours1, prevHours1, hoursGroup);
-    updateDigit(hoursContainer2, hours2, prevHours2, hoursGroup);
+    updateDigit(hoursContainer1, hours1);
+    updateDigit(hoursContainer2, hours2);
   }
   
-  // Update minutes
-  if (minutesContainer1 && minutesContainer2 && minutesGroup) {
+  // Update minutes - check if minutes changed and trigger bloom effect
+  let minutesChanged = false;
+  let allMinuteDots: HTMLElement[] = [];
+  
+  if (minutesContainer1 && minutesContainer2) {
     const minutes1 = parseInt(values.minutes[0]);
     const minutes2 = parseInt(values.minutes[1]);
     const prevMinutes1 = isFirstUpdate ? null : (previousValues.minutes ? parseInt(previousValues.minutes[0]) : null);
     const prevMinutes2 = isFirstUpdate ? null : (previousValues.minutes ? parseInt(previousValues.minutes[1]) : null);
     
-    updateDigit(minutesContainer1, minutes1, prevMinutes1, minutesGroup);
-    updateDigit(minutesContainer2, minutes2, prevMinutes2, minutesGroup);
+    // Check if minutes changed
+    if (!isFirstUpdate && (prevMinutes1 !== minutes1 || prevMinutes2 !== minutes2)) {
+      minutesChanged = true;
+    }
+    
+    // Update digits and collect active dots
+    const dots1 = updateDigit(minutesContainer1, minutes1);
+    const dots2 = updateDigit(minutesContainer2, minutes2);
+    allMinuteDots = [...dots1, ...dots2];
   }
   
   // Update seconds
-  if (secondsContainer1 && secondsContainer2 && secondsGroup) {
+  if (secondsContainer1 && secondsContainer2) {
     const seconds1 = parseInt(values.seconds[0]);
     const seconds2 = parseInt(values.seconds[1]);
-    const prevSeconds1 = isFirstUpdate ? null : (previousValues.seconds ? parseInt(previousValues.seconds[0]) : null);
-    const prevSeconds2 = isFirstUpdate ? null : (previousValues.seconds ? parseInt(previousValues.seconds[1]) : null);
-    
-    updateDigit(secondsContainer1, seconds1, prevSeconds1, secondsGroup);
-    updateDigit(secondsContainer2, seconds2, prevSeconds2, secondsGroup);
+    updateDigit(secondsContainer1, seconds1);
+    updateDigit(secondsContainer2, seconds2);
+  }
+  
+  // Trigger bloom effect only when minutes change
+  if (minutesChanged && allMinuteDots.length > 0) {
+    createBloomEffect(allMinuteDots);
   }
   
   // Store current values for next comparison
