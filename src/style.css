@@ -346,3 +346,133 @@ input[type="text"]:focus {
   animation: pulse 2s ease-in-out infinite;
 }
 
+/* Countdown Page Styles */
+.countdown-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.countdown-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 60px;
+}
+
+.time-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.time-label {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 600;
+}
+
+.digits-container {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.digit-container {
+  position: relative;
+}
+
+/* Dot Matrix Styles */
+.digit-matrix {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  gap: 3px;
+  width: 80px;
+  height: 112px;
+}
+
+@media (min-width: 768px) {
+  .digit-matrix {
+    width: 100px;
+    height: 140px;
+    gap: 4px;
+  }
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  transition: opacity 0.2s ease;
+}
+
+@media (min-width: 768px) {
+  .dot {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+.dot-active {
+  background: var(--border-neon-blue);
+  box-shadow: 0 0 8px var(--border-neon-blue), 0 0 12px rgba(14, 165, 233, 0.5);
+  opacity: 1;
+}
+
+/* Bloom Particle Styles */
+.bloom-particles-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.bloom-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #00ffff;
+  box-shadow: 0 0 4px #00ffff;
+  pointer-events: none;
+}
+
+/* Responsive Design for Countdown */
+@media (max-width: 768px) {
+  .countdown-display {
+    gap: 30px;
+  }
+
+  .time-label {
+    font-size: 1rem;
+  }
+
+  .digits-container {
+    gap: 10px;
+  }
+
+  .digit-matrix {
+    width: 60px;
+    height: 84px;
+    gap: 2px;
+  }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+  }
+}
+
