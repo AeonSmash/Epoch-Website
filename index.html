@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Epoch The Endless Tower - Enter the tower, claim rewards, and migrate your progress">
+  <title>Epoch The Endless Tower</title>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <!-- Portal Page (default) -->
+  <div id="portal-page" class="page active">
+    <main class="container">
+      <section class="hero">
+        <h1>⚔️ Epoch The Endless Tower</h1>
+        <p class="subtitle">Enter Decentraland to play, then return here to claim rewards</p>
+        <button id="dcl-btn" class="btn btn-primary">Enter the Tower</button>
+      </section>
+
+      <div class="cards-grid">
+        <!-- Oracle Info Card -->
+        <section class="card">
+          <h2>🔮 The Oracle</h2>
+          <p>If you're playing with a free name and want to bind your progress to a future paid Decentraland Name NFT, use the migration token from the scene.</p>
+          <p><strong>New players:</strong> Your progress is automatically tied to your Decentraland name. No wallet linking required!</p>
+          <a href="#oracle" class="btn btn-secondary">Go to The Oracle →</a>
+        </section>
+
+        <!-- Claim Card -->
+        <section class="card">
+          <h2>💎 Claim Rewards</h2>
+          <p>Have a claim code? Redeem it.</p>
+          <label for="claim-code">Claim code</label>
+          <input id="claim-code" type="text" maxlength="16" placeholder="REWARD123">
+          <button id="claim-btn" class="btn btn-success">Connect Phantom & Claim</button>
+          <div id="claim-status" class="status-message"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Oracle Page -->
+  <div id="oracle-page" class="page">
+    <!-- 3D Scene Container -->
+    <div id="three-container" class="three-container"></div>
+    
+    <!-- Oracle UI Overlay -->
+    <main class="container oracle-overlay">
+      <section class="hero">
+        <h1>🔮 The Oracle</h1>
+        <p class="subtitle">Migrate your game progress from a free name to your new Decentraland Name NFT</p>
+      </section>
+
+      <section class="card oracle-card">
+        <h2>Migration Process</h2>
+        <ol class="migration-steps">
+          <li>Get your migration token from the Decentraland scene (if playing with a free name)</li>
+          <li>Connect your Ethereum wallet that owns your Decentraland Name NFT</li>
+          <li>Enter your migration token</li>
+          <li>Confirm the migration</li>
+          <li>Return to Decentraland to continue playing with your new name</li>
+        </ol>
+
+        <div class="info-box">
+          <strong>Note:</strong> Your progress will be transferred from your free name to your paid name NFT. 
+          If you sell your name NFT later, the new owner will inherit your progress.
+        </div>
+
+        <div id="oracle-status" class="status-message"></div>
+
+        <label for="oracle-token">Migration Token</label>
+        <input id="oracle-token" type="text" maxlength="20" placeholder="XXXX-XXXX-XXXX" class="token-input">
+
+        <button id="oracle-connect-btn" class="btn btn-primary">Connect Ethereum Wallet</button>
+
+        <div id="oracle-wallet-info" class="wallet-info" style="display: none;">
+          <strong>Connected:</strong> <span id="oracle-wallet-address"></span><br>
+          <strong>Name NFT:</strong> <span id="oracle-name-nft"></span>
+        </div>
+
+        <button id="oracle-migrate-btn" class="btn btn-success" disabled>Migrate Progress</button>
+
+        <div class="back-link">
+          <a href="#portal">← Back to Portal</a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
+
