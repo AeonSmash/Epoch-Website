@@ -25,11 +25,14 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
       const particle = document.createElement('div');
       particle.className = 'bloom-particle';
       
-      // Initial velocity (explosion outward)
+      // Initial velocity (explosion outward) - faster initial speed
       const angle = Math.random() * Math.PI * 2;
-      const initialSpeed = 30 + Math.random() * 40; // 30-70px/s initial speed (increased for better explosion)
+      const initialSpeed = 80 + Math.random() * 60; // 80-140px/s initial speed (much faster explosion)
       let velocityX = Math.cos(angle) * initialSpeed;
       let velocityY = Math.sin(angle) * initialSpeed;
+      
+      // Velocity damping factor (friction) - particles slow down over time
+      const damping = 0.98; // Reduce velocity by 2% per frame (slows down gradually)
       
       // Gravity constant (pixels per second squared) - reduced for slower fall
       const gravity = 80; // 80px/s² (slower gravity)
@@ -71,11 +74,16 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
         const deltaTime = (currentTime - lastTime) / 1000; // Convert ms to seconds
         lastTime = currentTime;
         
+        // Apply velocity damping (friction) - particles slow down over time
+        // This makes them start fast and gradually slow down
+        velocityX *= damping;
+        velocityY *= damping;
+        
         // Only apply gravity after 5 seconds have elapsed
         if (elapsed >= gravityStartTime) {
-          // If particle is moving upward, slow it down first, then apply gravity
+          // If particle is moving upward, slow it down more aggressively
           if (velocityY < 0) {
-            // Slow down upward velocity (damping) - reduce by 10% per frame
+            // Additional damping for upward movement when gravity starts
             velocityY *= 0.9;
             // Once upward velocity is very small, set to zero so gravity can take over
             if (velocityY > -2) {
