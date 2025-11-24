@@ -46,9 +46,9 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
       particle.style.left = `${x}px`;
       particle.style.top = `${y}px`;
       
-      // Set initial color (red)
-      particle.style.backgroundColor = '#ff0000';
-      particle.style.boxShadow = '0 0 4px #ff0000';
+      // Set initial color (cyan)
+      particle.style.backgroundColor = '#00ffff';
+      particle.style.boxShadow = '0 0 4px #00ffff';
       
       particleContainer.appendChild(particle);
       
@@ -71,8 +71,17 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
         const deltaTime = (currentTime - lastTime) / 1000; // Convert ms to seconds
         lastTime = currentTime;
         
-        // Only apply gravity after 7 seconds have elapsed
+        // Only apply gravity after 5 seconds have elapsed
         if (elapsed >= gravityStartTime) {
+          // If particle is moving upward, slow it down first, then apply gravity
+          if (velocityY < 0) {
+            // Slow down upward velocity (damping) - reduce by 10% per frame
+            velocityY *= 0.9;
+            // Once upward velocity is very small, set to zero so gravity can take over
+            if (velocityY > -2) {
+              velocityY = 0;
+            }
+          }
           // Update velocity with gravity (only affects Y, in pixels per second)
           velocityY += gravity * deltaTime;
         }
@@ -93,27 +102,30 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
         const scale = 1 - (progress * 0.5); // Scale from 1 to 0.5
         particle.style.transform = `scale(${scale})`;
         
-        // Update color with three transitions: Red → Yellow → Purple
+        // Update color with three transitions: Cyan → Blue → Purple → Red → Yellow
         let r, g, b;
         
         if (progress < 0.33) {
-          // Transition 1: Red to Yellow
+          // Transition 1: Blue to Purple
           const t = progress / 0.33;
-          r = Math.round(255);                // 255 (red stays)
+          // Start from blue (0, 100, 255) → Purple (79, 70, 229)
+          r = Math.round(0 + (79 * t));       // 0 → 79
+          g = Math.round(100 - (30 * t));     // 100 → 70
+          b = Math.round(255 - (26 * t));     // 255 → 229
+        } else if (progress < 0.66) {
+          // Transition 2: Purple to Red
+          const t = (progress - 0.33) / 0.33;
+          // Purple (79, 70, 229) → Red (255, 0, 0)
+          r = Math.round(79 + (176 * t));     // 79 → 255
+          g = Math.round(70 - (70 * t));      // 70 → 0
+          b = Math.round(229 - (229 * t));    // 229 → 0
+        } else {
+          // Transition 3: Red to Yellow
+          const t = (progress - 0.66) / 0.34;
+          // Red (255, 0, 0) → Yellow (255, 255, 0)
+          r = Math.round(255);                // 255 (stays)
           g = Math.round(0 + (255 * t));      // 0 → 255
           b = Math.round(0);                  // 0 (stays)
-        } else if (progress < 0.66) {
-          // Transition 2: Yellow to Purple
-          const t = (progress - 0.33) / 0.33;
-          r = Math.round(255 - (176 * t));    // 255 → 79
-          g = Math.round(255 - (185 * t));    // 255 → 70
-          b = Math.round(0 + (229 * t));      // 0 → 229
-        } else {
-          // Transition 3: Purple (stays purple, slight fade)
-          const t = (progress - 0.66) / 0.34;
-          r = Math.round(79);                 // 79 (purple stays)
-          g = Math.round(70);                 // 70 (purple stays)
-          b = Math.round(229);                // 229 (purple stays)
         }
         
         const color = `rgb(${r}, ${g}, ${b})`;
