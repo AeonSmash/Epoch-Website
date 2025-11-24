@@ -14,9 +14,6 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
     document.body.appendChild(particleContainer);
   }
   
-  const scrollX = window.scrollX || window.pageXOffset;
-  const scrollY = window.scrollY || window.pageYOffset;
-  
   // Emit particles from each active dot
   activeDots.forEach((dot) => {
     const rect = dot.getBoundingClientRect();
@@ -28,52 +25,69 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
       const particle = document.createElement('div');
       particle.className = 'bloom-particle';
       
-      // Random angle and distance
+      // Initial velocity (explosion outward)
       const angle = Math.random() * Math.PI * 2;
-      const distance = 50 + Math.random() * 100; // 50-150px (increased for longer travel)
-      const duration = 2500 + Math.random() * 1000; // 2.5-3.5s (longer duration)
+      const initialSpeed = 20 + Math.random() * 30; // 20-50px/s initial speed
+      let velocityX = Math.cos(angle) * initialSpeed;
+      let velocityY = Math.sin(angle) * initialSpeed;
       
-      // Calculate end position
-      const endX = centerX + Math.cos(angle) * distance;
-      const endY = centerY + Math.sin(angle) * distance;
+      // Gravity constant (pixels per second squared)
+      const gravity = 200; // 200px/s²
       
-      // Set initial position (account for scroll)
-      particle.style.left = `${centerX + scrollX}px`;
-      particle.style.top = `${centerY + scrollY}px`;
+      // Duration: 10 seconds
+      const duration = 10000; // 10 seconds
       
-      // Calculate transform values
-      const translateX = endX - centerX;
-      const translateY = endY - centerY;
+      // Set initial position (viewport coordinates since container is fixed)
+      let x = centerX;
+      let y = centerY;
+      particle.style.left = `${x}px`;
+      particle.style.top = `${y}px`;
       
       // Set initial color
       particle.style.backgroundColor = '#00ffff';
       particle.style.boxShadow = '0 0 4px #00ffff';
       
-      // Create animation for transform and opacity
-      const animation = particle.animate([
-        {
-          transform: 'translate(0, 0) scale(1)',
-          opacity: 1
-        },
-        {
-          transform: `translate(${translateX}px, ${translateY}px) scale(0.5)`,
-          opacity: 0
-        }
-      ], {
-        duration: duration,
-        easing: 'ease-out',
-        fill: 'forwards'
-      });
+      particleContainer.appendChild(particle);
       
-      // Animate color separately with three color transitions
-      // Transition 1: Cyan → Blue (0-33%)
-      // Transition 2: Blue → Purple (33-66%)
-      // Transition 3: Purple → Magenta (66-100%)
+      // Physics-based animation with gravity
       const startTime = performance.now();
-      const animateColor = (currentTime: number) => {
+      let lastTime = startTime;
+      let animationId: number;
+      
+      const animate = (currentTime: number) => {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         
+        if (progress >= 1) {
+          // Animation complete
+          particle.remove();
+          return;
+        }
+        
+        // Calculate actual delta time (in seconds)
+        const deltaTime = (currentTime - lastTime) / 1000; // Convert ms to seconds
+        lastTime = currentTime;
+        
+        // Update velocity with gravity (only affects Y, in pixels per second)
+        velocityY += gravity * deltaTime;
+        
+        // Update position (convert velocity from px/s to px/frame)
+        x += velocityX * deltaTime;
+        y += velocityY * deltaTime;
+        
+        // Update particle position
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        
+        // Update opacity (fade out over time)
+        const opacity = 1 - progress;
+        particle.style.opacity = opacity.toString();
+        
+        // Update scale (shrink over time)
+        const scale = 1 - (progress * 0.5); // Scale from 1 to 0.5
+        particle.style.transform = `scale(${scale})`;
+        
+        // Update color with three transitions
         let r, g, b;
         
         if (progress < 0.33) {
@@ -100,18 +114,11 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
         particle.style.backgroundColor = color;
         particle.style.boxShadow = `0 0 4px ${color}`;
         
-        if (progress < 1) {
-          requestAnimationFrame(animateColor);
-        }
+        // Continue animation
+        animationId = requestAnimationFrame(animate);
       };
-      requestAnimationFrame(animateColor);
       
-      particleContainer.appendChild(particle);
-      
-      // Remove particle after animation completes
-      animation.addEventListener('finish', () => {
-        particle.remove();
-      });
+      animationId = requestAnimationFrame(animate);
     }
   });
 }
