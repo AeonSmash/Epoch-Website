@@ -34,8 +34,8 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
       // Gravity constant (pixels per second squared) - reduced for slower fall
       const gravity = 80; // 80px/s² (slower gravity)
       
-      // Gravity start time: 7 seconds
-      const gravityStartTime = 7000; // 7 seconds in milliseconds
+      // Gravity start time: 5 seconds
+      const gravityStartTime = 5000; // 5 seconds in milliseconds
       
       // Duration: 10 seconds
       const duration = 10000; // 10 seconds
