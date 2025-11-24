@@ -27,12 +27,15 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
       
       // Initial velocity (explosion outward)
       const angle = Math.random() * Math.PI * 2;
-      const initialSpeed = 20 + Math.random() * 30; // 20-50px/s initial speed
+      const initialSpeed = 30 + Math.random() * 40; // 30-70px/s initial speed (increased for better explosion)
       let velocityX = Math.cos(angle) * initialSpeed;
       let velocityY = Math.sin(angle) * initialSpeed;
       
-      // Gravity constant (pixels per second squared)
-      const gravity = 200; // 200px/s²
+      // Gravity constant (pixels per second squared) - reduced for slower fall
+      const gravity = 80; // 80px/s² (slower gravity)
+      
+      // Gravity start time: 7 seconds
+      const gravityStartTime = 7000; // 7 seconds in milliseconds
       
       // Duration: 10 seconds
       const duration = 10000; // 10 seconds
@@ -68,8 +71,11 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
         const deltaTime = (currentTime - lastTime) / 1000; // Convert ms to seconds
         lastTime = currentTime;
         
-        // Update velocity with gravity (only affects Y, in pixels per second)
-        velocityY += gravity * deltaTime;
+        // Only apply gravity after 7 seconds have elapsed
+        if (elapsed >= gravityStartTime) {
+          // Update velocity with gravity (only affects Y, in pixels per second)
+          velocityY += gravity * deltaTime;
+        }
         
         // Update position (convert velocity from px/s to px/frame)
         x += velocityX * deltaTime;
