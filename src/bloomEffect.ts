@@ -46,9 +46,9 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
       particle.style.left = `${x}px`;
       particle.style.top = `${y}px`;
       
-      // Set initial color
-      particle.style.backgroundColor = '#00ffff';
-      particle.style.boxShadow = '0 0 4px #00ffff';
+      // Set initial color (red)
+      particle.style.backgroundColor = '#ff0000';
+      particle.style.boxShadow = '0 0 4px #ff0000';
       
       particleContainer.appendChild(particle);
       
@@ -93,27 +93,27 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
         const scale = 1 - (progress * 0.5); // Scale from 1 to 0.5
         particle.style.transform = `scale(${scale})`;
         
-        // Update color with three transitions
+        // Update color with three transitions: Red → Yellow → Purple
         let r, g, b;
         
         if (progress < 0.33) {
-          // Transition 1: Cyan to Blue
+          // Transition 1: Red to Yellow
           const t = progress / 0.33;
-          r = Math.round(0 + (30 * t));      // 0 → 30
-          g = Math.round(255 + (100 * t));   // 255 → 155
-          b = Math.round(255 + (25 * t));   // 255 → 230
+          r = Math.round(255);                // 255 (red stays)
+          g = Math.round(0 + (255 * t));      // 0 → 255
+          b = Math.round(0);                  // 0 (stays)
         } else if (progress < 0.66) {
-          // Transition 2: Blue to Purple
+          // Transition 2: Yellow to Purple
           const t = (progress - 0.33) / 0.33;
-          r = Math.round(30 + (49 * t));    // 30 → 79
-          g = Math.round(155 - (85 * t));    // 155 → 70
-          b = Math.round(230 - (1 * t));     // 230 → 229
+          r = Math.round(255 - (176 * t));    // 255 → 79
+          g = Math.round(255 - (185 * t));    // 255 → 70
+          b = Math.round(0 + (229 * t));      // 0 → 229
         } else {
-          // Transition 3: Purple to Magenta
+          // Transition 3: Purple (stays purple, slight fade)
           const t = (progress - 0.66) / 0.34;
-          r = Math.round(79 + (137 * t));    // 79 → 216
-          g = Math.round(70 - (70 * t));     // 70 → 0
-          b = Math.round(229 - (29 * t));     // 229 → 200
+          r = Math.round(79);                 // 79 (purple stays)
+          g = Math.round(70);                 // 70 (purple stays)
+          b = Math.round(229);                // 229 (purple stays)
         }
         
         const color = `rgb(${r}, ${g}, ${b})`;
