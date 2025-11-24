@@ -78,25 +78,29 @@ function updateCountdown(): void {
   // Check if this is the first update
   const isFirstUpdate = !previousValues.days;
   
-  // Update days
+  // Collect all active dots from all digits
+  let allDots: HTMLElement[] = [];
+  
+  // Update days and collect dots
   if (daysContainer1 && daysContainer2) {
     const days1 = parseInt(values.days[0]);
     const days2 = parseInt(values.days[1]);
-    updateDigit(daysContainer1, days1);
-    updateDigit(daysContainer2, days2);
+    const dots1 = updateDigit(daysContainer1, days1);
+    const dots2 = updateDigit(daysContainer2, days2);
+    allDots = [...allDots, ...dots1, ...dots2];
   }
   
-  // Update hours
+  // Update hours and collect dots
   if (hoursContainer1 && hoursContainer2) {
     const hours1 = parseInt(values.hours[0]);
     const hours2 = parseInt(values.hours[1]);
-    updateDigit(hoursContainer1, hours1);
-    updateDigit(hoursContainer2, hours2);
+    const dots1 = updateDigit(hoursContainer1, hours1);
+    const dots2 = updateDigit(hoursContainer2, hours2);
+    allDots = [...allDots, ...dots1, ...dots2];
   }
   
-  // Update minutes - check if minutes changed and trigger bloom effect
+  // Update minutes - check if minutes changed
   let minutesChanged = false;
-  let allMinuteDots: HTMLElement[] = [];
   
   if (minutesContainer1 && minutesContainer2) {
     const minutes1 = parseInt(values.minutes[0]);
@@ -112,20 +116,21 @@ function updateCountdown(): void {
     // Update digits and collect active dots
     const dots1 = updateDigit(minutesContainer1, minutes1);
     const dots2 = updateDigit(minutesContainer2, minutes2);
-    allMinuteDots = [...dots1, ...dots2];
+    allDots = [...allDots, ...dots1, ...dots2];
   }
   
-  // Update seconds
+  // Update seconds and collect dots
   if (secondsContainer1 && secondsContainer2) {
     const seconds1 = parseInt(values.seconds[0]);
     const seconds2 = parseInt(values.seconds[1]);
-    updateDigit(secondsContainer1, seconds1);
-    updateDigit(secondsContainer2, seconds2);
+    const dots1 = updateDigit(secondsContainer1, seconds1);
+    const dots2 = updateDigit(secondsContainer2, seconds2);
+    allDots = [...allDots, ...dots1, ...dots2];
   }
   
-  // Trigger bloom effect only when minutes change
-  if (minutesChanged && allMinuteDots.length > 0) {
-    createBloomEffect(allMinuteDots);
+  // Trigger bloom effect from ALL dots when minutes change
+  if (minutesChanged && allDots.length > 0) {
+    createBloomEffect(allDots);
   }
   
   // Store current values for next comparison

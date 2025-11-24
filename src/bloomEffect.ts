@@ -30,8 +30,8 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
       
       // Random angle and distance
       const angle = Math.random() * Math.PI * 2;
-      const distance = 30 + Math.random() * 70; // 30-100px
-      const duration = 800 + Math.random() * 400; // 0.8-1.2s
+      const distance = 50 + Math.random() * 100; // 50-150px (increased for longer travel)
+      const duration = 2500 + Math.random() * 1000; // 2.5-3.5s (longer duration)
       
       // Calculate end position
       const endX = centerX + Math.cos(angle) * distance;
@@ -65,19 +65,36 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
         fill: 'forwards'
       });
       
-      // Animate color separately using a color interpolation function
+      // Animate color separately with three color transitions
+      // Transition 1: Cyan → Blue (0-33%)
+      // Transition 2: Blue → Purple (33-66%)
+      // Transition 3: Purple → Magenta (66-100%)
       const startTime = performance.now();
       const animateColor = (currentTime: number) => {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         
-        // Interpolate from cyan to purple
-        const r1 = 0, g1 = 255, b1 = 255; // Cyan
-        const r2 = 79, g2 = 70, b2 = 229; // Purple
+        let r, g, b;
         
-        const r = Math.round(r1 + (r2 - r1) * progress);
-        const g = Math.round(g1 + (g2 - g1) * progress);
-        const b = Math.round(b1 + (b2 - b1) * progress);
+        if (progress < 0.33) {
+          // Transition 1: Cyan to Blue
+          const t = progress / 0.33;
+          r = Math.round(0 + (30 * t));      // 0 → 30
+          g = Math.round(255 + (100 * t));   // 255 → 155
+          b = Math.round(255 + (25 * t));   // 255 → 230
+        } else if (progress < 0.66) {
+          // Transition 2: Blue to Purple
+          const t = (progress - 0.33) / 0.33;
+          r = Math.round(30 + (49 * t));    // 30 → 79
+          g = Math.round(155 - (85 * t));    // 155 → 70
+          b = Math.round(230 - (1 * t));     // 230 → 229
+        } else {
+          // Transition 3: Purple to Magenta
+          const t = (progress - 0.66) / 0.34;
+          r = Math.round(79 + (137 * t));    // 79 → 216
+          g = Math.round(70 - (70 * t));     // 70 → 0
+          b = Math.round(229 - (29 * t));     // 229 → 200
+        }
         
         const color = `rgb(${r}, ${g}, ${b})`;
         particle.style.backgroundColor = color;
