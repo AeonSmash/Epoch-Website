@@ -2,9 +2,9 @@
  * Creates a bloom emission effect with cyan dots that transition to purple
  * Particles explode from each active dot in the digit
  * @param activeDots - Array of active dot elements to emit particles from
- * @param particlesPerDot - Number of particles per dot (default: 3)
+ * @param particlesPerDot - Number of particles per dot (default: 6)
  */
-export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: number = 3): void {
+export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: number = 6): void {
   // Create container for particles if it doesn't exist
   let particleContainer = document.getElementById('bloom-particles');
   if (!particleContainer) {
