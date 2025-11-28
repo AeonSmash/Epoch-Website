@@ -37,11 +37,11 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
       // Gravity constant (pixels per second squared) - reduced for slower fall
       const gravity = 80; // 80px/s² (slower gravity)
       
-      // Gravity start time: 5 seconds
-      const gravityStartTime = 5000; // 5 seconds in milliseconds
+      // Gravity start time: 2 seconds
+      const gravityStartTime = 2000; // 2 seconds in milliseconds
       
-      // Duration: 10 seconds
-      const duration = 10000; // 10 seconds
+      // Duration: 5 seconds
+      const duration = 5000; // 5 seconds
       
       // Set initial position (viewport coordinates since container is fixed)
       let x = centerX;
@@ -79,7 +79,7 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
         velocityX *= damping;
         velocityY *= damping;
         
-        // Only apply gravity after 5 seconds have elapsed
+        // Only apply gravity after 2 seconds have elapsed
         if (elapsed >= gravityStartTime) {
           // If particle is moving upward, slow it down more aggressively
           if (velocityY < 0) {
