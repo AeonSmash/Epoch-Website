@@ -76,23 +76,29 @@ const DURATION = 8000; // 8 seconds - extended to allow particles to fully fade 
 function calculateColor(progress: number): { rgb: string; r: number; g: number; b: number } {
   let r, g, b;
   
-  if (progress < 0.33) {
-    // Transition 1: Blue to Purple
-    const t = progress / 0.33;
+  if (progress < 0.25) {
+    // Transition 1: Blue to Purple (0-25%)
+    const t = progress / 0.25;
     r = Math.round(0 + (79 * t));       // 0 → 79
     g = Math.round(100 - (30 * t));     // 100 → 70
     b = Math.round(255 - (26 * t));     // 255 → 229
-  } else if (progress < 0.66) {
-    // Transition 2: Purple to Red
-    const t = (progress - 0.33) / 0.33;
+  } else if (progress < 0.5) {
+    // Transition 2: Purple to Red (25-50%)
+    const t = (progress - 0.25) / 0.25;
     r = Math.round(79 + (176 * t));     // 79 → 255
     g = Math.round(70 - (70 * t));      // 70 → 0
     b = Math.round(229 - (229 * t));    // 229 → 0
-  } else {
-    // Transition 3: Red to Yellow
-    const t = (progress - 0.66) / 0.34;
+  } else if (progress < 0.75) {
+    // Transition 3: Red to Yellow (50-75%)
+    const t = (progress - 0.5) / 0.25;
     r = Math.round(255);                // 255 (stays)
     g = Math.round(0 + (255 * t));      // 0 → 255
+    b = Math.round(0);                  // 0 (stays)
+  } else {
+    // Transition 4: Yellow to Black (75-100%)
+    const t = (progress - 0.75) / 0.25;
+    r = Math.round(255 - (255 * t));    // 255 → 0
+    g = Math.round(255 - (255 * t));    // 255 → 0
     b = Math.round(0);                  // 0 (stays)
   }
   
