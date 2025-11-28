@@ -1,6 +1,5 @@
 import { renderDigitAsDots } from './dotMatrix';
 import { createBloomEffect } from './bloomEffect';
-import { createRippleEffect } from './rippleEffect';
 
 const TARGET_DATE = new Date('2026-01-01T00:00:00Z');
 
@@ -175,10 +174,9 @@ function updateCountdown(): void {
     previousDigits.seconds2 = seconds2;
   }
   
-  // Trigger bloom effect and ripple when minutes change
+  // Trigger bloom effect when minutes change
   if (minutesChanged && allDots.length > 0) {
     createBloomEffect(allDots);
-    createRippleEffect();
   }
   
   // Store current values for next comparison

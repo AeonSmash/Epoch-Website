@@ -59,7 +59,7 @@ function updateParticleTrail(particle: Particle, currentTime: number): void {
 const DAMPING = 0.98; // Velocity damping factor (friction)
 const GRAVITY = 80; // Gravity constant (pixels per second squared)
 const GRAVITY_START_TIME = 2000; // 2 seconds in milliseconds
-const DURATION = 5000; // 5 seconds
+const DURATION = 8000; // 8 seconds - extended to allow particles to fully fade out
 
 /**
  * Calculate color based on progress (0 to 1)
