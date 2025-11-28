@@ -34,11 +34,17 @@ function updateParticleTrail(particle: Particle, currentTime: number): void {
   // Create trail elements
   particle.trail.forEach((point, index) => {
     const age = currentTime - point.time;
-    const maxAge = 500; // Trail fades over 500ms
+    const maxAge = 1000; // Trail fades over 1 second (extended to match longer particle duration)
     if (age > maxAge) return;
     
     const trailOpacity = 1 - (age / maxAge);
     const trailSize = 2 + (index * 0.1); // Slightly larger for older points
+    
+    // Extract RGB from color string
+    const rgbMatch = point.color.match(/\d+/g);
+    const r = rgbMatch ? parseInt(rgbMatch[0]) : 0;
+    const g = rgbMatch ? parseInt(rgbMatch[1]) : 255;
+    const b = rgbMatch ? parseInt(rgbMatch[2]) : 255;
     
     const trailElement = document.createElement('div');
     trailElement.className = 'bloom-particle-trail';
@@ -49,7 +55,9 @@ function updateParticleTrail(particle: Particle, currentTime: number): void {
     trailElement.style.opacity = (trailOpacity * 0.4).toString(); // Max 40% opacity
     trailElement.style.width = `${trailSize}px`;
     trailElement.style.height = `${trailSize}px`;
-    trailElement.style.boxShadow = `0 0 ${trailSize * 2}px ${point.color}`;
+    // Trail glow also fades out
+    const trailGlowOpacity = trailOpacity * 0.6;
+    trailElement.style.boxShadow = `0 0 ${trailSize * 2}px rgba(${r}, ${g}, ${b}, ${trailGlowOpacity})`;
     
     particleContainer!.insertBefore(trailElement, particle.element);
   });
@@ -187,11 +195,15 @@ function animateParticles(currentTime: number): void {
     // Update color
     const colorData = calculateColor(progress);
     particle.element.style.backgroundColor = colorData.rgb;
-    // Enhanced glow with multiple layers for brighter bloom
-    const colorRgba1 = `rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, 0.8)`;
-    const colorRgba2 = `rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, 0.5)`;
-    const colorRgba3 = `rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, 0.3)`;
-    particle.element.style.boxShadow = `0 0 12px ${colorData.rgb}, 0 0 20px ${colorRgba1}, 0 0 30px ${colorRgba2}, 0 0 40px ${colorRgba3}`;
+    // Enhanced glow with multiple layers for brighter bloom - fade out with particle opacity
+    const glowOpacity1 = 0.8 * opacity;
+    const glowOpacity2 = 0.5 * opacity;
+    const glowOpacity3 = 0.3 * opacity;
+    const colorRgba1 = `rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, ${glowOpacity1})`;
+    const colorRgba2 = `rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, ${glowOpacity2})`;
+    const colorRgba3 = `rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, ${glowOpacity3})`;
+    const mainGlowOpacity = opacity;
+    particle.element.style.boxShadow = `0 0 12px rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, ${mainGlowOpacity}), 0 0 20px ${colorRgba1}, 0 0 30px ${colorRgba2}, 0 0 40px ${colorRgba3}`;
   }
   
   // Continue animation
