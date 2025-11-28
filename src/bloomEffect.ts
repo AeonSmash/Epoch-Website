@@ -13,6 +13,8 @@ interface Particle {
   startTime: number;
   duration: number;
   gravityStartTime: number;
+  trail: Array<{ x: number; y: number; time: number; color: string }>;
+  lastTrailTime: number;
 }
 
 // Global particle array and animation state
@@ -20,6 +22,38 @@ let particles: Particle[] = [];
 let animationId: number | null = null;
 let particleContainer: HTMLElement | null = null;
 let lastAnimationTime: number = 0;
+
+/**
+ * Update particle trail visualization
+ */
+function updateParticleTrail(particle: Particle, currentTime: number): void {
+  // Remove old trail elements
+  const existingTrails = particle.element.parentElement?.querySelectorAll(`[data-trail-for="${particle.element.id}"]`);
+  existingTrails?.forEach(trail => trail.remove());
+  
+  // Create trail elements
+  particle.trail.forEach((point, index) => {
+    const age = currentTime - point.time;
+    const maxAge = 500; // Trail fades over 500ms
+    if (age > maxAge) return;
+    
+    const trailOpacity = 1 - (age / maxAge);
+    const trailSize = 2 + (index * 0.1); // Slightly larger for older points
+    
+    const trailElement = document.createElement('div');
+    trailElement.className = 'bloom-particle-trail';
+    trailElement.setAttribute('data-trail-for', particle.element.id);
+    trailElement.style.left = `${point.x}px`;
+    trailElement.style.top = `${point.y}px`;
+    trailElement.style.backgroundColor = point.color;
+    trailElement.style.opacity = (trailOpacity * 0.4).toString(); // Max 40% opacity
+    trailElement.style.width = `${trailSize}px`;
+    trailElement.style.height = `${trailSize}px`;
+    trailElement.style.boxShadow = `0 0 ${trailSize * 2}px ${point.color}`;
+    
+    particleContainer!.insertBefore(trailElement, particle.element);
+  });
+}
 
 // Constants
 const DAMPING = 0.98; // Velocity damping factor (friction)
@@ -85,6 +119,9 @@ function animateParticles(currentTime: number): void {
     
     // Remove completed particles
     if (progress >= 1) {
+      // Clean up trail elements
+      const existingTrails = particleContainer?.querySelectorAll(`[data-trail-for="${particle.element.id}"]`);
+      existingTrails?.forEach(trail => trail.remove());
       particle.element.remove();
       particles.splice(i, 1);
       continue;
@@ -109,8 +146,31 @@ function animateParticles(currentTime: number): void {
     }
     
     // Update position
+    const prevX = particle.x;
+    const prevY = particle.y;
     particle.x += particle.velocityX * clampedDeltaTime;
     particle.y += particle.velocityY * clampedDeltaTime;
+    
+    // Add trail point every 16ms (roughly 60fps)
+    const timeSinceLastTrail = currentTime - particle.lastTrailTime;
+    if (timeSinceLastTrail >= 16) {
+      const colorData = calculateColor(progress);
+      particle.trail.push({
+        x: prevX,
+        y: prevY,
+        time: currentTime,
+        color: colorData.rgb
+      });
+      particle.lastTrailTime = currentTime;
+      
+      // Keep only last 20 trail points
+      if (particle.trail.length > 20) {
+        particle.trail.shift();
+      }
+    }
+    
+    // Update trail elements
+    updateParticleTrail(particle, currentTime);
     
     // Update DOM element
     particle.element.style.left = `${particle.x}px`;
@@ -196,6 +256,10 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
       
       particleContainer!.appendChild(particle);
       
+      // Give particle unique ID for trail tracking
+      const particleId = `particle-${startTime}-${i}-${Math.random().toString(36).substr(2, 9)}`;
+      particle.id = particleId;
+      
       // Add particle to array
       particles.push({
         element: particle,
@@ -205,7 +269,9 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
         velocityY,
         startTime,
         duration: DURATION,
-        gravityStartTime: GRAVITY_START_TIME
+        gravityStartTime: GRAVITY_START_TIME,
+        trail: [],
+        lastTrailTime: startTime
       });
     }
   });

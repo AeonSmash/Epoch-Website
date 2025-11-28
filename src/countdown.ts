@@ -1,5 +1,6 @@
 import { renderDigitAsDots } from './dotMatrix';
 import { createBloomEffect } from './bloomEffect';
+import { createRippleEffect } from './rippleEffect';
 
 const TARGET_DATE = new Date('2026-01-01T00:00:00Z');
 
@@ -15,6 +16,26 @@ let previousValues: CountdownValues = {
   hours: '',
   minutes: '',
   seconds: ''
+};
+
+let previousDigits: {
+  days1: number | null;
+  days2: number | null;
+  hours1: number | null;
+  hours2: number | null;
+  minutes1: number | null;
+  minutes2: number | null;
+  seconds1: number | null;
+  seconds2: number | null;
+} = {
+  days1: null,
+  days2: null,
+  hours1: null,
+  hours2: null,
+  minutes1: null,
+  minutes2: null,
+  seconds1: null,
+  seconds2: null
 };
 
 /**
@@ -43,13 +64,31 @@ function calculateTimeRemaining(): CountdownValues {
 
 /**
  * Update a single digit and return active dots
+ * Returns previous digit for transition detection
  */
 function updateDigit(
   container: HTMLElement,
-  digit: number
-): HTMLElement[] {
+  digit: number,
+  previousDigit: number | null
+): { activeDots: HTMLElement[]; changed: boolean } {
+  const changed = previousDigit !== null && previousDigit !== digit;
+  
+  // Add transition animation if digit changed
+  if (changed) {
+    container.classList.add('digit-transition');
+    setTimeout(() => {
+      container.classList.remove('digit-transition');
+    }, 300);
+    
+    // Add glow pulse effect
+    container.classList.add('digit-glow-pulse');
+    setTimeout(() => {
+      container.classList.remove('digit-glow-pulse');
+    }, 600);
+  }
+  
   const result = renderDigitAsDots(container, digit);
-  return result.activeDots;
+  return { activeDots: result.activeDots, changed };
 }
 
 /**
@@ -85,18 +124,22 @@ function updateCountdown(): void {
   if (daysContainer1 && daysContainer2) {
     const days1 = parseInt(values.days[0]);
     const days2 = parseInt(values.days[1]);
-    const dots1 = updateDigit(daysContainer1, days1);
-    const dots2 = updateDigit(daysContainer2, days2);
-    allDots = [...allDots, ...dots1, ...dots2];
+    const result1 = updateDigit(daysContainer1, days1, previousDigits.days1);
+    const result2 = updateDigit(daysContainer2, days2, previousDigits.days2);
+    allDots = [...allDots, ...result1.activeDots, ...result2.activeDots];
+    previousDigits.days1 = days1;
+    previousDigits.days2 = days2;
   }
   
   // Update hours and collect dots
   if (hoursContainer1 && hoursContainer2) {
     const hours1 = parseInt(values.hours[0]);
     const hours2 = parseInt(values.hours[1]);
-    const dots1 = updateDigit(hoursContainer1, hours1);
-    const dots2 = updateDigit(hoursContainer2, hours2);
-    allDots = [...allDots, ...dots1, ...dots2];
+    const result1 = updateDigit(hoursContainer1, hours1, previousDigits.hours1);
+    const result2 = updateDigit(hoursContainer2, hours2, previousDigits.hours2);
+    allDots = [...allDots, ...result1.activeDots, ...result2.activeDots];
+    previousDigits.hours1 = hours1;
+    previousDigits.hours2 = hours2;
   }
   
   // Update minutes - check if minutes changed
@@ -114,23 +157,28 @@ function updateCountdown(): void {
     }
     
     // Update digits and collect active dots
-    const dots1 = updateDigit(minutesContainer1, minutes1);
-    const dots2 = updateDigit(minutesContainer2, minutes2);
-    allDots = [...allDots, ...dots1, ...dots2];
+    const result1 = updateDigit(minutesContainer1, minutes1, previousDigits.minutes1);
+    const result2 = updateDigit(minutesContainer2, minutes2, previousDigits.minutes2);
+    allDots = [...allDots, ...result1.activeDots, ...result2.activeDots];
+    previousDigits.minutes1 = minutes1;
+    previousDigits.minutes2 = minutes2;
   }
   
   // Update seconds and collect dots
   if (secondsContainer1 && secondsContainer2) {
     const seconds1 = parseInt(values.seconds[0]);
     const seconds2 = parseInt(values.seconds[1]);
-    const dots1 = updateDigit(secondsContainer1, seconds1);
-    const dots2 = updateDigit(secondsContainer2, seconds2);
-    allDots = [...allDots, ...dots1, ...dots2];
+    const result1 = updateDigit(secondsContainer1, seconds1, previousDigits.seconds1);
+    const result2 = updateDigit(secondsContainer2, seconds2, previousDigits.seconds2);
+    allDots = [...allDots, ...result1.activeDots, ...result2.activeDots];
+    previousDigits.seconds1 = seconds1;
+    previousDigits.seconds2 = seconds2;
   }
   
-  // Trigger bloom effect from ALL dots when minutes change
+  // Trigger bloom effect and ripple when minutes change
   if (minutesChanged && allDots.length > 0) {
     createBloomEffect(allDots);
+    createRippleEffect();
   }
   
   // Store current values for next comparison

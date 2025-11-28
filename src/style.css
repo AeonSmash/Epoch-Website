@@ -387,6 +387,45 @@ input[type="text"]:focus {
 
 .digit-container {
   position: relative;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+/* Digit Transition Animation */
+.digit-transition {
+  animation: digitMorph 0.3s ease;
+}
+
+@keyframes digitMorph {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.8) rotateY(90deg);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1) rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+/* Glow Pulse on Digit Changes */
+.digit-glow-pulse {
+  animation: digitGlowPulse 0.6s ease;
+}
+
+@keyframes digitGlowPulse {
+  0% {
+    filter: drop-shadow(0 0 5px var(--border-neon-blue));
+  }
+  50% {
+    filter: drop-shadow(0 0 25px var(--border-neon-blue)) 
+            drop-shadow(0 0 40px rgba(14, 165, 233, 0.6));
+  }
+  100% {
+    filter: drop-shadow(0 0 5px var(--border-neon-blue));
+  }
 }
 
 /* Dot Matrix Styles */
@@ -447,6 +486,38 @@ input[type="text"]:focus {
   background: #00ffff;
   box-shadow: 0 0 12px #00ffff, 0 0 20px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.4);
   pointer-events: none;
+}
+
+.bloom-particle-trail {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transition: opacity 0.1s ease;
+}
+
+/* Ripple Effect Styles */
+.ripple-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+.ripple-wave {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid var(--border-neon-blue);
+  box-shadow: 0 0 20px var(--border-neon-blue), 
+              0 0 40px rgba(14, 165, 233, 0.5),
+              0 0 60px rgba(14, 165, 233, 0.3);
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.1s ease;
 }
 
 /* Responsive Design for Countdown */
