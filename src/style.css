@@ -486,13 +486,16 @@ input[type="text"]:focus {
   background: #00ffff;
   box-shadow: 0 0 12px #00ffff, 0 0 20px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.4);
   pointer-events: none;
+  will-change: transform, opacity; /* GPU acceleration hint */
+  transform: translateZ(0); /* Force GPU layer */
 }
 
 .bloom-particle-trail {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
-  transition: opacity 0.1s ease;
+  will-change: transform, opacity; /* GPU acceleration hint */
+  transform: translateZ(0); /* Force GPU layer */
 }
 
 /* Ripple Effect Styles */

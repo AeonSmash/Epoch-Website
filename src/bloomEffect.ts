@@ -25,22 +25,31 @@ let lastAnimationTime: number = 0;
 
 /**
  * Update particle trail visualization
+ * Optimized: Only update trails every few frames and use transform for better performance
  */
+let trailUpdateCounter = 0;
 function updateParticleTrail(particle: Particle, currentTime: number): void {
-  // Remove old trail elements
-  const existingTrails = particle.element.parentElement?.querySelectorAll(`[data-trail-for="${particle.element.id}"]`);
-  existingTrails?.forEach(trail => trail.remove());
+  // Only update trails every 3 frames to reduce DOM operations
+  trailUpdateCounter++;
+  if (trailUpdateCounter % 3 !== 0) return;
   
-  // Create trail elements
-  particle.trail.forEach((point, index) => {
+  // Remove old trail elements
+  const existingTrails = particleContainer?.querySelectorAll(`[data-trail-for="${particle.element.id}"]`);
+  if (existingTrails) {
+    existingTrails.forEach(trail => trail.remove());
+  }
+  
+  // Create trail elements (limit to 10 for performance)
+  const visibleTrails = particle.trail.slice(-10);
+  visibleTrails.forEach((point, index) => {
     const age = currentTime - point.time;
-    const maxAge = 1000; // Trail fades over 1 second (extended to match longer particle duration)
+    const maxAge = 1000;
     if (age > maxAge) return;
     
     const trailOpacity = 1 - (age / maxAge);
-    const trailSize = 2 + (index * 0.1); // Slightly larger for older points
+    const trailSize = 2;
     
-    // Extract RGB from color string
+    // Extract RGB from color string (cached)
     const rgbMatch = point.color.match(/\d+/g);
     const r = rgbMatch ? parseInt(rgbMatch[0]) : 0;
     const g = rgbMatch ? parseInt(rgbMatch[1]) : 255;
@@ -49,17 +58,17 @@ function updateParticleTrail(particle: Particle, currentTime: number): void {
     const trailElement = document.createElement('div');
     trailElement.className = 'bloom-particle-trail';
     trailElement.setAttribute('data-trail-for', particle.element.id);
-    trailElement.style.left = `${point.x}px`;
-    trailElement.style.top = `${point.y}px`;
+    // Use transform instead of left/top for GPU acceleration
+    trailElement.style.transform = `translate(${point.x}px, ${point.y}px)`;
     trailElement.style.backgroundColor = point.color;
-    trailElement.style.opacity = (trailOpacity * 0.4).toString(); // Max 40% opacity
+    trailElement.style.opacity = (trailOpacity * 0.3).toString(); // Reduced opacity
     trailElement.style.width = `${trailSize}px`;
     trailElement.style.height = `${trailSize}px`;
-    // Trail glow also fades out
-    const trailGlowOpacity = trailOpacity * 0.6;
-    trailElement.style.boxShadow = `0 0 ${trailSize * 2}px rgba(${r}, ${g}, ${b}, ${trailGlowOpacity})`;
+    // Simplified glow (single shadow for performance)
+    const trailGlowOpacity = trailOpacity * 0.4;
+    trailElement.style.boxShadow = `0 0 ${trailSize * 1.5}px rgba(${r}, ${g}, ${b}, ${trailGlowOpacity})`;
     
-    particleContainer!.insertBefore(trailElement, particle.element);
+    particleContainer!.appendChild(trailElement);
   });
 }
 
@@ -165,6 +174,9 @@ function animateParticles(currentTime: number): void {
     particle.x += particle.velocityX * clampedDeltaTime;
     particle.y += particle.velocityY * clampedDeltaTime;
     
+    // Calculate scale (shrink over time)
+    const scale = 1 - (progress * 0.5); // Scale from 1 to 0.5
+    
     // Add trail point every 16ms (roughly 60fps)
     const timeSinceLastTrail = currentTime - particle.lastTrailTime;
     if (timeSinceLastTrail >= 16) {
@@ -177,39 +189,30 @@ function animateParticles(currentTime: number): void {
       });
       particle.lastTrailTime = currentTime;
       
-      // Keep only last 20 trail points
-      if (particle.trail.length > 20) {
+      // Keep only last 10 trail points (reduced for performance)
+      if (particle.trail.length > 10) {
         particle.trail.shift();
       }
     }
     
-    // Update trail elements
+    // Update trail elements (throttled for performance)
     updateParticleTrail(particle, currentTime);
     
-    // Update DOM element
-    particle.element.style.left = `${particle.x}px`;
-    particle.element.style.top = `${particle.y}px`;
+    // Update DOM element using transform for GPU acceleration (combines translate and scale)
+    particle.element.style.transform = `translate(${particle.x}px, ${particle.y}px) scale(${scale})`;
     
     // Update opacity (fade out over time)
     const opacity = 1 - progress;
     particle.element.style.opacity = opacity.toString();
     
-    // Update scale (shrink over time)
-    const scale = 1 - (progress * 0.5); // Scale from 1 to 0.5
-    particle.element.style.transform = `scale(${scale})`;
-    
     // Update color
     const colorData = calculateColor(progress);
     particle.element.style.backgroundColor = colorData.rgb;
-    // Enhanced glow with multiple layers for brighter bloom - fade out with particle opacity
-    const glowOpacity1 = 0.8 * opacity;
-    const glowOpacity2 = 0.5 * opacity;
-    const glowOpacity3 = 0.3 * opacity;
-    const colorRgba1 = `rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, ${glowOpacity1})`;
-    const colorRgba2 = `rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, ${glowOpacity2})`;
-    const colorRgba3 = `rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, ${glowOpacity3})`;
+    // Optimized glow - reduced to 2 layers for better performance
+    const glowOpacity1 = 0.6 * opacity;
+    const glowOpacity2 = 0.3 * opacity;
     const mainGlowOpacity = opacity;
-    particle.element.style.boxShadow = `0 0 12px rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, ${mainGlowOpacity}), 0 0 20px ${colorRgba1}, 0 0 30px ${colorRgba2}, 0 0 40px ${colorRgba3}`;
+    particle.element.style.boxShadow = `0 0 15px rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, ${mainGlowOpacity}), 0 0 30px rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, ${glowOpacity1}), 0 0 50px rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, ${glowOpacity2})`;
   }
   
   // Continue animation
@@ -231,7 +234,7 @@ function startAnimationLoop(): void {
  * @param activeDots - Array of active dot elements to emit particles from
  * @param particlesPerDot - Number of particles per dot (default: 6)
  */
-export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: number = 6): void {
+export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: number = 4): void {
   // Create container for particles if it doesn't exist
   if (!particleContainer) {
     particleContainer = document.getElementById('bloom-particles');
@@ -262,11 +265,11 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
       const velocityX = Math.cos(angle) * initialSpeed;
       const velocityY = Math.sin(angle) * initialSpeed;
       
-      // Set initial position
+      // Set initial position using transform for GPU acceleration
       const x = centerX;
       const y = centerY;
-      particle.style.left = `${x}px`;
-      particle.style.top = `${y}px`;
+      particle.style.transform = `translate(${x}px, ${y}px)`;
+      particle.style.willChange = 'transform, opacity'; // Hint for GPU acceleration
       
       // Set initial color (cyan) with enhanced glow
       particle.style.backgroundColor = '#00ffff';
