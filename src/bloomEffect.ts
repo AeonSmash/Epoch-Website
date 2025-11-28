@@ -29,8 +29,9 @@ const DURATION = 5000; // 5 seconds
 
 /**
  * Calculate color based on progress (0 to 1)
+ * Returns both RGB string and RGB values
  */
-function calculateColor(progress: number): string {
+function calculateColor(progress: number): { rgb: string; r: number; g: number; b: number } {
   let r, g, b;
   
   if (progress < 0.33) {
@@ -53,7 +54,7 @@ function calculateColor(progress: number): string {
     b = Math.round(0);                  // 0 (stays)
   }
   
-  return `rgb(${r}, ${g}, ${b})`;
+  return { rgb: `rgb(${r}, ${g}, ${b})`, r, g, b };
 }
 
 /**
@@ -124,9 +125,13 @@ function animateParticles(currentTime: number): void {
     particle.element.style.transform = `scale(${scale})`;
     
     // Update color
-    const color = calculateColor(progress);
-    particle.element.style.backgroundColor = color;
-    particle.element.style.boxShadow = `0 0 4px ${color}`;
+    const colorData = calculateColor(progress);
+    particle.element.style.backgroundColor = colorData.rgb;
+    // Enhanced glow with multiple layers for brighter bloom
+    const colorRgba1 = `rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, 0.8)`;
+    const colorRgba2 = `rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, 0.5)`;
+    const colorRgba3 = `rgba(${colorData.r}, ${colorData.g}, ${colorData.b}, 0.3)`;
+    particle.element.style.boxShadow = `0 0 12px ${colorData.rgb}, 0 0 20px ${colorRgba1}, 0 0 30px ${colorRgba2}, 0 0 40px ${colorRgba3}`;
   }
   
   // Continue animation
@@ -185,9 +190,9 @@ export function createBloomEffect(activeDots: HTMLElement[], particlesPerDot: nu
       particle.style.left = `${x}px`;
       particle.style.top = `${y}px`;
       
-      // Set initial color (cyan)
+      // Set initial color (cyan) with enhanced glow
       particle.style.backgroundColor = '#00ffff';
-      particle.style.boxShadow = '0 0 4px #00ffff';
+      particle.style.boxShadow = '0 0 12px #00ffff, 0 0 20px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)';
       
       particleContainer!.appendChild(particle);
       
